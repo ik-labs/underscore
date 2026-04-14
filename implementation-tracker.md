@@ -78,19 +78,19 @@ Derived from [mvp.md](/Users/himeshp/apps/hackthons/Underscore/mvp.md).
 
 **Tasks**
 
-- [ ] Define project metadata shape in Vercel KV
-- [ ] Implement `POST /api/project`
-- [ ] Create workspace route: `/project/[id]`
-- [ ] Build upload entry UI for PDF, TXT, MD, and SRT
-- [ ] Parse PDF using `pdf-parse`
-- [ ] Parse SRT using `subtitles-parser`
-- [ ] Handle TXT and MD as raw text sources
-- [ ] Build chunking utility for ~400 token chunks with overlap
-- [ ] Define prose chunk schema for turbopuffer
-- [ ] Add enrichment pass for `emotional_tags` and `sonic_signature`
-- [ ] Embed prose chunks with Gemini
-- [ ] Upsert prose chunks into `proj_{id}_prose`
-- [ ] Return ingestion counts and progress states to UI
+- [x] Define project metadata shape in Vercel KV
+- [x] Implement `POST /api/project`
+- [x] Create workspace route: `/project/[id]`
+- [x] Build upload entry UI for PDF, TXT, MD, and SRT
+- [x] Parse PDF using `pdf-parse`
+- [x] Parse SRT using `subtitles-parser`
+- [x] Handle TXT and MD as raw text sources
+- [x] Build chunking utility for ~400 token chunks with overlap
+- [x] Define prose chunk schema for turbopuffer
+- [x] Add enrichment pass for `emotional_tags` and `sonic_signature`
+- [x] Embed prose chunks with Gemini
+- [x] Upsert prose chunks into `proj_{id}_prose`
+- [x] Return ingestion counts and progress states to UI
 
 **Exit Criteria**
 
@@ -100,7 +100,10 @@ Derived from [mvp.md](/Users/himeshp/apps/hackthons/Underscore/mvp.md).
 
 **Blockers / Notes**
 
-- 
+- Phase 1 UI, routes, parsing pipeline, enrichment fallback, Gemini embedding, and turbopuffer upsert path are implemented.
+- `npm run lint` and `npm run build` pass with the Phase 1 code.
+- `POST /api/project` and `/project/[id]` currently return controlled missing-env responses locally until `KV_REST_API_URL`, `KV_REST_API_TOKEN`, and `KV_REST_API_READ_ONLY_TOKEN` are configured.
+- Full ingest runtime validation still depends on `GOOGLE_GENERATIVE_AI_API_KEY` and `TURBOPUFFER_API_KEY`. Anthropic enrichment remains optional.
 
 ## Phase 2: Sonic Pipeline And Audio Input
 

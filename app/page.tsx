@@ -1,8 +1,10 @@
+import { CreateProjectForm } from "@/components/create-project-form";
+
 const setupMilestones = [
-  "Next.js app scaffolded",
-  "Env contract defined",
-  "Gemini + turbopuffer smoke tests",
-  "ElevenLabs Music access validation",
+  "Create a project",
+  "Upload prose sources",
+  "Chunk and enrich corpus text",
+  "Index into turbopuffer prose search",
 ];
 
 export default function Home() {
@@ -12,37 +14,27 @@ export default function Home() {
         <section className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div className="space-y-8">
             <div className="inline-flex items-center rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs uppercase tracking-[0.3em] text-stone-200/80">
-              Phase 0 bootstrap
+              Phase 1 workspace
             </div>
             <div className="space-y-5">
               <p className="max-w-2xl text-sm uppercase tracking-[0.4em] text-emerald-200/70">
                 Underscore
               </p>
               <h1 className="max-w-4xl text-5xl font-semibold leading-[0.92] tracking-[-0.04em] text-balance sm:text-6xl lg:text-7xl">
-                Retrieval-grounded scoring for filmmakers.
+                Turn project materials into a searchable scoring corpus.
               </h1>
               <p className="max-w-2xl text-lg leading-8 text-stone-200/78 sm:text-xl">
-                Phase 0 establishes the app shell and validates the external
-                stack before ingestion, retrieval, and score generation are
-                wired in.
+                Create a project, upload the script and references, and let the
+                ingestion pipeline prepare the prose corpus for retrieval.
               </p>
             </div>
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <button
-                type="button"
-                className="rounded-full bg-stone-100 px-6 py-3 text-sm font-semibold text-stone-950 transition hover:bg-emerald-100"
-              >
-                Start a project
-              </button>
-              <span className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-stone-100/85">
-                Tracker ready in repo
-              </span>
-            </div>
+
+            <CreateProjectForm />
           </div>
 
           <aside className="rounded-[2rem] border border-white/10 bg-black/20 p-6 shadow-2xl shadow-black/20 backdrop-blur">
             <p className="text-sm uppercase tracking-[0.3em] text-emerald-200/65">
-              Phase 0 goals
+              Phase 1 goals
             </p>
             <ul className="mt-6 space-y-4">
               {setupMilestones.map((milestone) => (
