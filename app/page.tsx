@@ -2,9 +2,10 @@ import { CreateProjectForm } from "@/components/create-project-form";
 
 const setupMilestones = [
   "Create a project",
-  "Upload prose sources",
-  "Chunk and enrich corpus text",
-  "Index into turbopuffer prose search",
+  "Upload prose sources (PDF, TXT, MD, SRT)",
+  "Upload audio references (WAV, MP3, M4A)",
+  "Record voice direction memos",
+  "Index prose and sonic corpora into turbopuffer",
 ];
 
 export default function Home() {
@@ -14,7 +15,7 @@ export default function Home() {
         <section className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div className="space-y-8">
             <div className="inline-flex items-center rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs uppercase tracking-[0.3em] text-stone-200/80">
-              Phase 1 workspace
+              Phase 2 workspace
             </div>
             <div className="space-y-5">
               <p className="max-w-2xl text-sm uppercase tracking-[0.4em] text-emerald-200/70">
@@ -24,8 +25,9 @@ export default function Home() {
                 Turn project materials into a searchable scoring corpus.
               </h1>
               <p className="max-w-2xl text-lg leading-8 text-stone-200/78 sm:text-xl">
-                Create a project, upload the script and references, and let the
-                ingestion pipeline prepare the prose corpus for retrieval.
+                Create a project, upload scripts, audio references, and voice
+                memos — the pipeline embeds everything into a searchable
+                prose and sonic corpus.
               </p>
             </div>
 
@@ -34,7 +36,7 @@ export default function Home() {
 
           <aside className="rounded-[2rem] border border-white/10 bg-black/20 p-6 shadow-2xl shadow-black/20 backdrop-blur">
             <p className="text-sm uppercase tracking-[0.3em] text-emerald-200/65">
-              Phase 1 goals
+              Phase 2 goals
             </p>
             <ul className="mt-6 space-y-4">
               {setupMilestones.map((milestone) => (

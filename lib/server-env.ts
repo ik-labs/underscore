@@ -53,3 +53,26 @@ export function getAnthropicApiKey() {
   const apiKey = readEnvValue("ANTHROPIC_API_KEY");
   return apiKey.length > 0 ? apiKey : null;
 }
+
+export function getHuggingFaceApiKey() {
+  const key = readEnvValue("HUGGINGFACE_API_KEY");
+  return key.length > 0 ? key : null;
+}
+
+export function assertPhase2AudioEnv() {
+  const missing = missingKeys([
+    "HUGGINGFACE_API_KEY",
+    "BLOB_READ_WRITE_TOKEN",
+    "TURBOPUFFER_API_KEY",
+  ]);
+
+  if (missing.length > 0) {
+    throw new MissingServerEnvError(missing);
+  }
+
+  return {
+    hfApiKey: process.env.HUGGINGFACE_API_KEY as string,
+    blobToken: process.env.BLOB_READ_WRITE_TOKEN as string,
+    turbopufferApiKey: process.env.TURBOPUFFER_API_KEY as string,
+  };
+}

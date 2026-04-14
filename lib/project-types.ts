@@ -2,7 +2,9 @@ export type SourceType =
   | "script"
   | "director_notes"
   | "subtitle"
-  | "moodboard";
+  | "moodboard"
+  | "audio_reference"
+  | "voice_memo";
 
 export type SourceStatus = "indexed" | "failed";
 
@@ -15,6 +17,7 @@ export interface ProjectSourceMetadata {
   chunkCount: number;
   status: SourceStatus;
   errorMessage?: string;
+  blobUrl?: string;
 }
 
 export interface ProjectRecord {
@@ -26,6 +29,7 @@ export interface ProjectRecord {
   sonicNamespaceId: string;
   sourceCount: number;
   proseChunkCount: number;
+  sonicChunkCount: number;
   sources: ProjectSourceMetadata[];
 }
 
@@ -53,6 +57,16 @@ export interface IngestResponse {
   failedFiles: Array<{ fileName: string; errorMessage: string }>;
   proseChunkCountAdded: number;
   proseChunkCountTotal: number;
+  sources: IngestSourceResult[];
+  warnings: string[];
+}
+
+export interface SonicIngestResponse {
+  projectId: string;
+  processedFiles: string[];
+  failedFiles: Array<{ fileName: string; errorMessage: string }>;
+  sonicChunkCountAdded: number;
+  sonicChunkCountTotal: number;
   sources: IngestSourceResult[];
   warnings: string[];
 }

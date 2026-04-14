@@ -44,6 +44,8 @@ function hydrateProject(value: unknown): ProjectRecord | null {
           : 0,
     proseChunkCount:
       typeof record.proseChunkCount === "number" ? record.proseChunkCount : 0,
+    sonicChunkCount:
+      typeof record.sonicChunkCount === "number" ? record.sonicChunkCount : 0,
     sources: Array.isArray(record.sources)
       ? (record.sources as ProjectSourceMetadata[])
       : [],
@@ -63,6 +65,7 @@ export function buildProjectRecord(name: string): ProjectRecord {
     sonicNamespaceId: `proj_${id}_sonic`,
     sourceCount: 0,
     proseChunkCount: 0,
+    sonicChunkCount: 0,
     sources: [],
   };
 }

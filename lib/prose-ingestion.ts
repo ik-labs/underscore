@@ -12,7 +12,8 @@ import type {
   ProjectSourceMetadata,
   SourceType,
 } from "@/lib/project-types";
-import { getAnthropicApiKey } from "@/lib/server-env";
+import { getAnthropicApiKey, getHuggingFaceApiKey } from "@/lib/server-env";
+import { embedSonicSignaturesFromProse } from "@/lib/sonic-ingestion";
 
 const PROSE_SCHEMA = {
   project_id: {
@@ -874,6 +875,28 @@ export async function ingestProseFiles(options: {
     ],
     warnings,
   };
+
+  // Cross-populate sonic namespace with CLAP-embedded sonic signatures from prose
+  const hfApiKey = getHuggingFaceApiKey();
+  if (hfApiKey) {
+    const signatures = enriched.map((chunk) => ({
+      sourceId: chunk.sourceId,
+      fileName: chunk.fileName,
+      sourceType: chunk.sourceType,
+      signature: chunk.sonicSignature,
+      chunkIndex: chunk.chunkIndex,
+      uploadedAt: chunk.uploadedAt,
+    }));
+    const crossResult = await embedSonicSignaturesFromProse({
+      project,
+      sonicSignatures: signatures,
+      hfApiKey,
+      turbopufferApiKey,
+    });
+    warnings.push(
+      ...crossResult.warnings.map((w) => `[sonic cross-pop] ${w}`)
+    );
+  }
 
   return {
     kind: "success" as const,

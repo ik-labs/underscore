@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 
 import { ProseUploader } from "@/components/prose-uploader";
+import { AudioUploader } from "@/components/audio-uploader";
+import { AudioRecorder } from "@/components/audio-recorder";
 import { getProject } from "@/lib/projects";
 import { MissingServerEnvError } from "@/lib/server-env";
 
@@ -64,8 +66,9 @@ export default async function ProjectWorkspace({
               {project.name}
             </h1>
             <p className="max-w-2xl text-sm leading-7 text-stone-200/78">
-              Build the prose corpus first. Upload scripts, notes, markdown, and
-              subtitles so the retrieval layer has grounded material to work with.
+              Build your corpus by uploading prose and audio. Scripts, notes,
+              subtitles, audio references, and voice direction all feed the
+              retrieval layer.
             </p>
           </div>
 
@@ -81,13 +84,18 @@ export default async function ProjectWorkspace({
                 Corpus
               </p>
               <p className="mt-2 text-sm text-stone-100">
-                {project.sourceCount} sources · {project.proseChunkCount} prose chunks
+                {project.sourceCount} sources · {project.proseChunkCount} prose chunks · {project.sonicChunkCount ?? 0} sonic chunks
               </p>
             </div>
           </div>
         </header>
 
         <ProseUploader projectId={project.id} />
+
+        <section className="grid gap-6 lg:grid-cols-2">
+          <AudioUploader projectId={project.id} />
+          <AudioRecorder projectId={project.id} />
+        </section>
 
         <section className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
           <div className="rounded-[2rem] border border-white/10 bg-black/20 p-6">
