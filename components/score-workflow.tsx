@@ -79,41 +79,63 @@ export function ScoreWorkflow({ projectId }: { projectId: string }) {
 
   async function startRecording() {
     recordedChunksRef.current = [];
+
+    // Check codec support before acquiring the mic so we can give an accurate
+    // error message and avoid leaving the stream open if construction fails.
+    const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+      ? "audio/webm;codecs=opus"
+      : MediaRecorder.isTypeSupported("audio/mp4")
+      ? "audio/mp4"
+      : null;
+
+    if (!mimeType) {
+      setErrorMessage("Audio recording is not supported in this browser. Attach a file instead.");
+      return;
+    }
+
+    let stream: MediaStream;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-
-      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-        ? "audio/webm;codecs=opus"
-        : "audio/mp4";
-
-      const recorder = new MediaRecorder(stream, { mimeType });
-      mediaRecorderRef.current = recorder;
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) recordedChunksRef.current.push(e.data);
-      };
-
-      recorder.onstop = () => {
-        const blob = new Blob(recordedChunksRef.current, { type: mimeType });
-        const ext = mimeType.includes("mp4") ? "m4a" : "webm";
-        const file = new File([blob], `voice-direction.${ext}`, {
-          type: mimeType,
-        });
-        const url = URL.createObjectURL(blob);
-        if (previewUrl) URL.revokeObjectURL(previewUrl);
-        setPreviewUrl(url);
-        setVoiceMemoFile(file);
-        stream.getTracks().forEach((t) => t.stop());
-        streamRef.current = null;
-        setRecording(false);
-      };
-
-      recorder.start(250);
-      setRecording(true);
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch {
       setErrorMessage("Microphone access denied.");
+      return;
     }
+
+    streamRef.current = stream;
+
+    let recorder: MediaRecorder;
+    try {
+      recorder = new MediaRecorder(stream, { mimeType });
+    } catch {
+      stream.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      setErrorMessage("Could not start recorder — codec not supported. Attach a file instead.");
+      return;
+    }
+
+    mediaRecorderRef.current = recorder;
+
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) recordedChunksRef.current.push(e.data);
+    };
+
+    recorder.onstop = () => {
+      const blob = new Blob(recordedChunksRef.current, { type: mimeType });
+      const ext = mimeType.includes("mp4") ? "m4a" : "webm";
+      const file = new File([blob], `voice-direction.${ext}`, {
+        type: mimeType,
+      });
+      const url = URL.createObjectURL(blob);
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(url);
+      setVoiceMemoFile(file);
+      stream.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      setRecording(false);
+    };
+
+    recorder.start(250);
+    setRecording(true);
   }
 
   function stopRecording() {
@@ -161,9 +183,20 @@ export function ScoreWorkflow({ projectId }: { projectId: string }) {
       timersRef.current.forEach((t) => window.clearTimeout(t));
 
       if (!res.ok || !("chunks" in payload)) {
-        setErrorMessage(
-          (payload as { message?: string }).message ?? "Score generation failed."
-        );
+        const p = payload as {
+          message?: string;
+          error?: string;
+          missing?: string[];
+        };
+        let msg = p.message ?? "Score generation failed.";
+        if (
+          p.error === "missing_server_env" &&
+          Array.isArray(p.missing) &&
+          p.missing.length > 0
+        ) {
+          msg = `Missing server environment variables: ${p.missing.join(", ")}.`;
+        }
+        setErrorMessage(msg);
         setStage("failed");
         return;
       }
