@@ -81,7 +81,7 @@ export type QueryOrigin =
 export interface RetrievedChunk {
   id: string;
   namespace: "prose" | "sonic";
-  queryOrigin: QueryOrigin;
+  queryOrigins: QueryOrigin[];
   rawDist?: number;
   rrfScore: number;
   text: string;

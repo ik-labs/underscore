@@ -55,7 +55,7 @@ async function extractSearchTerms(
   ).slice(0, 10);
   const regexFallback = regexMatches.join(" ");
 
-  if (!anthropicApiKey || regexFallback.length === 0) return regexFallback;
+  if (!anthropicApiKey) return regexFallback;
 
   try {
     const client = new Anthropic({ apiKey: anthropicApiKey });
@@ -161,7 +161,7 @@ function normalizeProseResult(
   return {
     id: String(r.id),
     namespace: "prose",
-    queryOrigin: origin,
+    queryOrigins: [origin],
     rawDist: typeof r.dist === "number" ? r.dist : undefined,
     rrfScore: 0,
     text: typeof a.text === "string" ? a.text : "",
@@ -192,7 +192,7 @@ function normalizeSonicResult(
   return {
     id: String(r.id),
     namespace: "sonic",
-    queryOrigin: origin,
+    queryOrigins: [origin],
     rawDist: typeof r.dist === "number" ? r.dist : undefined,
     rrfScore: 0,
     text: typeof a.text === "string" ? a.text : "",
@@ -317,7 +317,10 @@ async function querySonicAudio(
 function reciprocalRankFusion(
   rankedLists: RetrievedChunk[][]
 ): RetrievedChunk[] {
-  const scoreMap = new Map<string, { chunk: RetrievedChunk; score: number }>();
+  const scoreMap = new Map<
+    string,
+    { chunk: RetrievedChunk; score: number; origins: Set<QueryOrigin> }
+  >();
 
   for (const list of rankedLists) {
     list.forEach((chunk, rankIndex) => {
@@ -325,8 +328,13 @@ function reciprocalRankFusion(
       const existing = scoreMap.get(chunk.id);
       if (existing) {
         existing.score += contribution;
+        for (const o of chunk.queryOrigins) existing.origins.add(o);
       } else {
-        scoreMap.set(chunk.id, { chunk, score: contribution });
+        scoreMap.set(chunk.id, {
+          chunk,
+          score: contribution,
+          origins: new Set(chunk.queryOrigins),
+        });
       }
     });
   }
@@ -334,7 +342,11 @@ function reciprocalRankFusion(
   return Array.from(scoreMap.values())
     .sort((a, b) => b.score - a.score)
     .slice(0, FINAL_TOP_N)
-    .map(({ chunk, score }) => ({ ...chunk, rrfScore: score }));
+    .map(({ chunk, score, origins }) => ({
+      ...chunk,
+      rrfScore: score,
+      queryOrigins: Array.from(origins),
+    }));
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
@@ -423,9 +435,7 @@ export async function retrieveForScene(
   settled.forEach((result, i) => {
     const origin = queryTasks[i]!.origin;
     if (result.status === "fulfilled") {
-      if (result.value.length > 0) {
-        queriesExecuted.push(origin);
-      }
+      queriesExecuted.push(origin); // record all executed queries, even zero-hit ones
       rankedLists.push(result.value);
     } else {
       const msg =
