@@ -54,6 +54,24 @@ export function getAnthropicApiKey() {
   return apiKey.length > 0 ? apiKey : null;
 }
 
+export function assertPhase3RetrievalEnv() {
+  const missing = missingKeys([
+    "GOOGLE_GENERATIVE_AI_API_KEY",
+    "TURBOPUFFER_API_KEY",
+  ]);
+
+  if (missing.length > 0) {
+    throw new MissingServerEnvError(missing);
+  }
+
+  return {
+    googleApiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY as string,
+    turbopufferApiKey: process.env.TURBOPUFFER_API_KEY as string,
+    anthropicApiKey: getAnthropicApiKey(),
+    hfApiKey: getHuggingFaceApiKey(),
+  };
+}
+
 export function getHuggingFaceApiKey() {
   const key = readEnvValue("HUGGINGFACE_API_KEY");
   return key.length > 0 ? key : null;

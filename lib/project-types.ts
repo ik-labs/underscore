@@ -70,3 +70,39 @@ export interface SonicIngestResponse {
   sources: IngestSourceResult[];
   warnings: string[];
 }
+
+export type QueryOrigin =
+  | "prose_vector"
+  | "prose_bm25"
+  | "prose_director"
+  | "sonic_text"
+  | "sonic_audio";
+
+export interface RetrievedChunk {
+  id: string;
+  namespace: "prose" | "sonic";
+  queryOrigin: QueryOrigin;
+  rawDist?: number;
+  rrfScore: number;
+  text: string;
+  sonicSignature?: string;
+  sourceId: string;
+  sourceFile: string;
+  sourceType: SourceType;
+  locationHint: string;
+  emotionalTags: string[];
+  timestampMs?: number;
+  pageNum?: number;
+  durationMs?: number;
+  blobUrl?: string;
+}
+
+export interface RetrievalResponse {
+  projectId: string;
+  sceneText: string;
+  voiceTranscript?: string;
+  chunks: RetrievedChunk[];
+  queriesExecuted: QueryOrigin[];
+  warnings: string[];
+  synthesis: null;
+}
