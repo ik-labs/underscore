@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { Music } from "@elevenlabs/elevenlabs-js";
+import { Music, ElevenLabsError } from "@elevenlabs/elevenlabs-js";
 import { put } from "@vercel/blob";
 import { v4 as uuidv4 } from "uuid";
 
@@ -129,6 +129,27 @@ async function callClaude(
 
 // ─── ElevenLabs + Blob ────────────────────────────────────────────────────────
 
+type BadPromptBody = { status: "bad_prompt"; prompt_suggestion: string };
+type BadPlanBody = {
+  status: "bad_composition_plan";
+  composition_plan_suggestion: unknown;
+};
+
+function extractSuggestion(
+  error: ElevenLabsError
+): { kind: "prompt"; value: string } | { kind: "plan"; value: unknown } | null {
+  if (error.statusCode !== 422) return null;
+  const body = error.body as Record<string, unknown> | null | undefined;
+  if (!body) return null;
+  if (body.status === "bad_prompt" && typeof body.prompt_suggestion === "string") {
+    return { kind: "prompt", value: (body as BadPromptBody).prompt_suggestion };
+  }
+  if (body.status === "bad_composition_plan" && body.composition_plan_suggestion) {
+    return { kind: "plan", value: (body as BadPlanBody).composition_plan_suggestion };
+  }
+  return null;
+}
+
 async function generateAndUpload(
   prompt: string,
   shape: MusicPromptShape,
@@ -137,7 +158,29 @@ async function generateAndUpload(
   blobToken: string
 ): Promise<ScoreVariant> {
   const music = new Music({ apiKey: elevenLabsApiKey });
-  const result = await music.composeDetailed({ prompt });
+
+  let result;
+  try {
+    result = await music.composeDetailed({ prompt });
+  } catch (err) {
+    if (err instanceof ElevenLabsError) {
+      const suggestion = extractSuggestion(err);
+      if (suggestion?.kind === "prompt") {
+        // Retry once with ElevenLabs' copyright-safe suggestion
+        result = await music.composeDetailed({ prompt: suggestion.value });
+      } else if (suggestion?.kind === "plan") {
+        result = await music.composeDetailed({
+          compositionPlan: suggestion.value as Parameters<
+            typeof music.composeDetailed
+          >[0] extends { compositionPlan?: infer P } ? P : never,
+        });
+      } else {
+        throw err;
+      }
+    } else {
+      throw err;
+    }
+  }
 
   const key = `scores/${projectId}/${uuidv4()}.mp3`;
   const { url } = await put(key, result.audio, {
@@ -167,6 +210,12 @@ export async function synthesizeAndGenerate(
     elevenLabsApiKey,
     blobToken,
   } = input;
+
+  if (chunks.length === 0) {
+    throw new Error(
+      "No corpus evidence retrieved; synthesis requires at least one matched chunk."
+    );
+  }
 
   const contextBlock = buildContextBlock(chunks);
 
