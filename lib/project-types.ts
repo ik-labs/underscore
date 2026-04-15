@@ -97,6 +97,40 @@ export interface RetrievedChunk {
   blobUrl?: string;
 }
 
+export interface CueBrief {
+  mood: string;
+  tempo: string;
+  instrumentation: string;
+  avoidArtists: string[];
+  keyThemes: string[];
+  sourceAttribution: string[];
+}
+
+export type MusicPromptShape = "fast_burst" | "cinematic" | "voice_weighted";
+
+export interface MusicPromptSection {
+  shape: MusicPromptShape;
+  prompt: string;
+}
+
+export interface ClaudeSynthesisOutput {
+  cueBrief: CueBrief;
+  prompts: MusicPromptSection[];
+}
+
+export interface ScoreVariant {
+  shape: MusicPromptShape;
+  blobUrl: string;
+  durationMs?: number;
+  compositionPlan?: unknown;
+}
+
+export interface SynthesisResult {
+  cueBrief: CueBrief;
+  variants: ScoreVariant[];
+  warnings: string[];
+}
+
 export interface RetrievalResponse {
   projectId: string;
   sceneText: string;
@@ -104,5 +138,5 @@ export interface RetrievalResponse {
   chunks: RetrievedChunk[];
   queriesExecuted: QueryOrigin[];
   warnings: string[];
-  synthesis: null;
+  synthesis: SynthesisResult | null;
 }

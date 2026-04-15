@@ -77,6 +77,24 @@ export function getHuggingFaceApiKey() {
   return key.length > 0 ? key : null;
 }
 
+export function assertPhase4SynthesisEnv() {
+  const missing = missingKeys([
+    "ANTHROPIC_API_KEY",
+    "ELEVENLABS_API_KEY",
+    "BLOB_READ_WRITE_TOKEN",
+  ]);
+
+  if (missing.length > 0) {
+    throw new MissingServerEnvError(missing);
+  }
+
+  return {
+    anthropicApiKey: process.env.ANTHROPIC_API_KEY as string,
+    elevenLabsApiKey: process.env.ELEVENLABS_API_KEY as string,
+    blobToken: process.env.BLOB_READ_WRITE_TOKEN as string,
+  };
+}
+
 export function assertPhase2AudioEnv() {
   const missing = missingKeys([
     "HUGGINGFACE_API_KEY",

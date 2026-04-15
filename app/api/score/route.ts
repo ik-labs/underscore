@@ -1,15 +1,18 @@
 import { NextResponse } from "next/server";
 
 import { retrieveForScene } from "@/lib/retrieval";
+import { synthesizeAndGenerate } from "@/lib/synthesis";
 import { getProject } from "@/lib/projects";
 import {
   assertKvEnv,
   assertPhase3RetrievalEnv,
+  assertPhase4SynthesisEnv,
   MissingServerEnvError,
 } from "@/lib/server-env";
+import type { SynthesisResult } from "@/lib/project-types";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 export async function POST(request: Request): Promise<NextResponse> {
   let formData: FormData;
@@ -91,8 +94,10 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
+  let retrievalResult;
+
   try {
-    const result = await retrieveForScene({
+    retrievalResult = await retrieveForScene({
       project,
       sceneText: sceneText.trim(),
       voiceBuffer,
@@ -102,10 +107,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       anthropicApiKey: env.anthropicApiKey,
       hfApiKey: env.hfApiKey,
     });
-
-    return NextResponse.json(result, { status: 200 });
   } catch (error) {
-    console.error("[/api/score]", error);
+    console.error("[/api/score] retrieval failed:", error);
     const message =
       error instanceof Error ? error.message : "Unknown retrieval error";
     return NextResponse.json(
@@ -113,4 +116,24 @@ export async function POST(request: Request): Promise<NextResponse> {
       { status: 500 }
     );
   }
+
+  let synthesis: SynthesisResult | null = null;
+
+  try {
+    const synthEnv = assertPhase4SynthesisEnv();
+    synthesis = await synthesizeAndGenerate({
+      projectId: project.id,
+      sceneText: sceneText.trim(),
+      voiceTranscript: retrievalResult.voiceTranscript,
+      chunks: retrievalResult.chunks,
+      anthropicApiKey: synthEnv.anthropicApiKey,
+      elevenLabsApiKey: synthEnv.elevenLabsApiKey,
+      blobToken: synthEnv.blobToken,
+    });
+  } catch (error) {
+    console.warn("[/api/score] synthesis skipped:", error);
+    // synthesis stays null — retrieval result still returned
+  }
+
+  return NextResponse.json({ ...retrievalResult, synthesis }, { status: 200 });
 }
