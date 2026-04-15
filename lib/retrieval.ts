@@ -40,7 +40,7 @@ async function embedSceneText(
 ): Promise<number[]> {
   const google = createGoogleGenerativeAI({ apiKey: googleApiKey });
   const { embedding } = await embed({
-    model: google.textEmbeddingModel("gemini-embedding-001"),
+    model: google.textEmbeddingModel("gemini-embedding-2-preview"),
     value: text,
   });
   return embedding;

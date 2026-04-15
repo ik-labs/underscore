@@ -602,7 +602,7 @@ async function embedChunks(chunks: EnrichedChunk[], googleApiKey: string) {
   const values = chunks.map((chunk) => chunk.text);
 
   const { embeddings } = await embedMany({
-    model: google.textEmbeddingModel("gemini-embedding-001"),
+    model: google.textEmbeddingModel("gemini-embedding-2-preview"),
     values,
   });
 
