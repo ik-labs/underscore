@@ -44,8 +44,8 @@ export function assertPhase1IngestEnv() {
   }
 
   return {
-    googleApiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY as string,
-    turbopufferApiKey: process.env.TURBOPUFFER_API_KEY as string,
+    googleApiKey: readEnvValue("GOOGLE_GENERATIVE_AI_API_KEY"),
+    turbopufferApiKey: readEnvValue("TURBOPUFFER_API_KEY"),
   };
 }
 
@@ -65,8 +65,8 @@ export function assertPhase3RetrievalEnv() {
   }
 
   return {
-    googleApiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY as string,
-    turbopufferApiKey: process.env.TURBOPUFFER_API_KEY as string,
+    googleApiKey: readEnvValue("GOOGLE_GENERATIVE_AI_API_KEY"),
+    turbopufferApiKey: readEnvValue("TURBOPUFFER_API_KEY"),
     anthropicApiKey: getAnthropicApiKey(),
     hfApiKey: getHuggingFaceApiKey(),
   };
@@ -89,9 +89,9 @@ export function assertPhase4SynthesisEnv() {
   }
 
   return {
-    anthropicApiKey: process.env.ANTHROPIC_API_KEY as string,
-    elevenLabsApiKey: process.env.ELEVENLABS_API_KEY as string,
-    blobToken: process.env.BLOB_READ_WRITE_TOKEN as string,
+    anthropicApiKey: readEnvValue("ANTHROPIC_API_KEY"),
+    elevenLabsApiKey: readEnvValue("ELEVENLABS_API_KEY"),
+    blobToken: readEnvValue("BLOB_READ_WRITE_TOKEN"),
   };
 }
 
@@ -107,8 +107,8 @@ export function assertPhase2AudioEnv() {
   }
 
   return {
-    hfApiKey: process.env.HUGGINGFACE_API_KEY as string,
-    blobToken: process.env.BLOB_READ_WRITE_TOKEN as string,
-    turbopufferApiKey: process.env.TURBOPUFFER_API_KEY as string,
+    hfApiKey: readEnvValue("HUGGINGFACE_API_KEY"),
+    blobToken: readEnvValue("BLOB_READ_WRITE_TOKEN"),
+    turbopufferApiKey: readEnvValue("TURBOPUFFER_API_KEY"),
   };
 }
