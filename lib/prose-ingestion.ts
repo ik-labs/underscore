@@ -1,7 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { embedMany } from "ai";
-import { PDFParse } from "pdf-parse";
+// Import from internal path to avoid pdf-parse's debug-mode side effect at build time
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdfParse = require("pdf-parse/lib/pdf-parse.js") as (
+  buffer: Buffer
+) => Promise<{ text: string }>;
 import subtitlesParser from "subtitles-parser";
 import { Turbopuffer } from "@turbopuffer/turbopuffer";
 
@@ -379,16 +383,9 @@ function detectSourceType(
 }
 
 async function parsePdf(file: File) {
-  const parser = new PDFParse({
-    data: Buffer.from(await file.arrayBuffer()),
-  });
-
-  try {
-    const result = await parser.getText();
-    return normalizeTextBlock(result.text);
-  } finally {
-    await parser.destroy();
-  }
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const result = await pdfParse(buffer);
+  return normalizeTextBlock(result.text);
 }
 
 async function parseSource(
