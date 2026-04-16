@@ -401,7 +401,8 @@ export async function retrieveForScene(
         warnings.push(
           "CLAP model is warming up; sonic text and audio queries skipped."
         );
-      } else {
+      } else if (!msg.includes("(404)")) {
+        // Suppress 404 silently — model not deployed on HF serverless inference
         warnings.push(`CLAP text embedding failed: ${msg}; sonic queries skipped.`);
       }
     }

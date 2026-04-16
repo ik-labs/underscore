@@ -184,14 +184,17 @@ async function generateAndUpload(
 
   const key = `scores/${projectId}/${uuidv4()}.mp3`;
   const { url } = await put(key, result.audio, {
-    access: "public",
+    access: "private",
     token: blobToken,
     contentType: "audio/mpeg",
   });
 
+  // Route through our proxy so private blobs are playable in the browser
+  const proxyUrl = `/api/audio?u=${encodeURIComponent(url)}`;
+
   return {
     shape,
-    blobUrl: url,
+    blobUrl: proxyUrl,
     compositionPlan: result.json?.compositionPlan,
   };
 }

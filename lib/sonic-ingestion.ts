@@ -410,9 +410,12 @@ export async function embedSonicSignaturesFromProse(options: {
       });
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unknown error";
-      warnings.push(
-        `Failed to CLAP-embed sonic signature for ${sig.fileName} chunk ${sig.chunkIndex}: ${msg}`
-      );
+      // Suppress 404 silently — model not deployed on HF serverless inference
+      if (!msg.includes("(404)")) {
+        warnings.push(
+          `Failed to CLAP-embed sonic signature for ${sig.fileName} chunk ${sig.chunkIndex}: ${msg}`
+        );
+      }
     }
   }
 

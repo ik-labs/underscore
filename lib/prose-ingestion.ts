@@ -890,9 +890,11 @@ export async function ingestProseFiles(options: {
       hfApiKey,
       turbopufferApiKey,
     });
-    warnings.push(
-      ...crossResult.warnings.map((w) => `[sonic cross-pop] ${w}`)
+    // Only surface meaningful warnings — suppress expected infrastructure gaps (e.g. CLAP 404)
+    const surfaceableWarnings = crossResult.warnings.filter(
+      (w) => !w.includes("(404)")
     );
+    warnings.push(...surfaceableWarnings.map((w) => `[sonic cross-pop] ${w}`));
   }
 
   return {
