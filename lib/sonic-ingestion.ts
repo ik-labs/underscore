@@ -530,10 +530,10 @@ export async function ingestAudioFiles(options: {
     try {
       // 1. Upload to Vercel Blob
       const blob = await put(file.name, file, {
-        access: "public",
+        access: "private",
         token: blobToken,
       });
-      blobUrl = blob.url;
+      blobUrl = `/api/audio?u=${encodeURIComponent(blob.url)}`;
 
       // 2. Read buffer
       const buffer = Buffer.from(await file.arrayBuffer());
