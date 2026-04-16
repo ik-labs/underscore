@@ -30,7 +30,7 @@ const SONIC_SCHEMA = {
 
 const SUPPORTED_AUDIO_EXTENSIONS = new Set(["wav", "mp3", "m4a", "webm"]);
 const HF_CLAP_URL =
-  "https://api-inference.huggingface.co/models/laion/larger_clap_general";
+  "https://router.huggingface.co/hf-inference/models/laion/larger_clap_general/pipeline/feature-extraction";
 const MAX_SEGMENT_COUNT = 10;
 const MAX_SINGLE_FILE_BYTES = 25 * 1024 * 1024; // 25 MB
 
