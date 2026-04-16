@@ -384,29 +384,9 @@ export async function retrieveForScene(
 
   const { transcript, clapEmbedding: clapAudioEmbedding } = voiceMemoResult;
 
-  // ── Step 2: CLAP text embedding for Q4 ──────────────────────────────────────
-  let clapTextEmbedding: number[] | null = null;
-
-  if (hfApiKey) {
-    const queryText = transcript.length > 0 ? transcript : sceneText;
-    try {
-      clapTextEmbedding = await embedWithClap(
-        { kind: "text", text: queryText },
-        hfApiKey
-      );
-    } catch (error) {
-      const msg =
-        error instanceof Error ? error.message : "unknown error";
-      if (msg.toLowerCase().includes("warming")) {
-        warnings.push(
-          "CLAP model is warming up; sonic text and audio queries skipped."
-        );
-      } else if (!msg.includes("(404)")) {
-        // Suppress 404 silently — model not deployed on HF serverless inference
-        warnings.push(`CLAP text embedding failed: ${msg}; sonic queries skipped.`);
-      }
-    }
-  }
+  // ── Step 2: Sonic text embedding reuses sceneEmbedding (Gemini) ─────────────
+  // Sonic namespace is cross-populated with Gemini embeddings from prose ingestion,
+  // so we query it with the same Gemini sceneEmbedding — no separate CLAP step needed.
 
   // ── Step 3: Five parallel queries ───────────────────────────────────────────
   const tpuf = new Turbopuffer({ apiKey: turbopufferApiKey });
@@ -420,9 +400,8 @@ export async function retrieveForScene(
     { origin: "prose_vector", promise: queryProseVector(proseNs, sceneEmbedding, project.id) },
     { origin: "prose_bm25", promise: queryProseBM25(proseNs, searchTerms, project.id) },
     { origin: "prose_director", promise: queryProseDirectorNotes(proseNs, sceneEmbedding, project.id) },
-    ...(clapTextEmbedding
-      ? [{ origin: "sonic_text" as const, promise: querySonicText(sonicNs, clapTextEmbedding, project.id) }]
-      : []),
+    // Sonic namespace is cross-populated with Gemini embeddings — query with same sceneEmbedding
+    { origin: "sonic_text", promise: querySonicText(sonicNs, sceneEmbedding, project.id) },
     ...(clapAudioEmbedding
       ? [{ origin: "sonic_audio" as const, promise: querySonicAudio(sonicNs, clapAudioEmbedding, project.id) }]
       : []),

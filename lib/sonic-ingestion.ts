@@ -1,6 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { put } from "@vercel/blob";
 import { Turbopuffer } from "@turbopuffer/turbopuffer";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { embed } from "ai";
 
 import type {
   IngestSourceResult,
@@ -380,19 +382,21 @@ export async function embedSonicSignaturesFromProse(options: {
     chunkIndex: number;
     uploadedAt: string;
   }>;
-  hfApiKey: string;
+  googleApiKey: string;
   turbopufferApiKey: string;
 }): Promise<{ count: number; warnings: string[] }> {
-  const { project, sonicSignatures, hfApiKey, turbopufferApiKey } = options;
+  const { project, sonicSignatures, googleApiKey, turbopufferApiKey } = options;
   const warnings: string[] = [];
   const embedded: EmbeddedAudioChunk[] = [];
 
+  const google = createGoogleGenerativeAI({ apiKey: googleApiKey });
+
   for (const sig of sonicSignatures) {
     try {
-      const embedding = await embedWithClap(
-        { kind: "text", text: sig.signature },
-        hfApiKey
-      );
+      const { embedding } = await embed({
+        model: google.textEmbeddingModel("gemini-embedding-001"),
+        value: sig.signature,
+      });
       embedded.push({
         sourceId: sig.sourceId,
         fileName: sig.fileName,
@@ -410,12 +414,9 @@ export async function embedSonicSignaturesFromProse(options: {
       });
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unknown error";
-      // Suppress 404 silently — model not deployed on HF serverless inference
-      if (!msg.includes("(404)")) {
-        warnings.push(
-          `Failed to CLAP-embed sonic signature for ${sig.fileName} chunk ${sig.chunkIndex}: ${msg}`
-        );
-      }
+      warnings.push(
+        `Failed to embed sonic signature for ${sig.fileName} chunk ${sig.chunkIndex}: ${msg}`
+      );
     }
   }
 
