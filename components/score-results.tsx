@@ -1,6 +1,7 @@
 "use client";
 
 import type { MusicPromptShape, SynthesisResult } from "@/lib/project-types";
+import { SfxSection } from "@/components/sfx-section";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -32,7 +33,7 @@ export function ScoreResults({ synthesis }: { synthesis: SynthesisResult | null 
     );
   }
 
-  const { cueBrief, variants, warnings } = synthesis;
+  const { cueBrief, variants, sfxVariants = [], warnings } = synthesis;
 
   return (
     <div className="rounded-[2rem] border border-white/10 bg-black/20 p-6 shadow-2xl shadow-black/10">
@@ -122,6 +123,9 @@ export function ScoreResults({ synthesis }: { synthesis: SynthesisResult | null 
           ))}
         </div>
       )}
+
+      {/* SFX Variants */}
+      <SfxSection sfxVariants={sfxVariants} />
 
       {/* Warnings */}
       {warnings.length > 0 ? (

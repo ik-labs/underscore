@@ -46,7 +46,13 @@ function stageIndex(s: Stage) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function ScoreWorkflow({ projectId }: { projectId: string }) {
+export function ScoreWorkflow({
+  projectId,
+  initialSceneText,
+}: {
+  projectId: string;
+  initialSceneText?: string;
+}) {
   const [stage, setStage] = useState<Stage>("idle");
   const [sceneText, setSceneText] = useState("");
   const [response, setResponse] = useState<RetrievalResponse | null>(null);
@@ -54,6 +60,13 @@ export function ScoreWorkflow({ projectId }: { projectId: string }) {
   const [warnings, setWarnings] = useState<string[]>([]);
 
   const timersRef = useRef<number[]>([]);
+
+  // Sync when a scene is selected from the panel
+  useEffect(() => {
+    if (initialSceneText !== undefined) {
+      setSceneText(initialSceneText);
+    }
+  }, [initialSceneText]);
 
   const isSubmitting =
     stage === "retrieving" || stage === "synthesizing" || stage === "generating";

@@ -65,7 +65,13 @@ function stageLabel(stage: UploadStage) {
   }
 }
 
-export function ProseUploader({ projectId }: { projectId: string }) {
+export function ProseUploader({
+  projectId,
+  onIngestSuccess,
+}: {
+  projectId: string;
+  onIngestSuccess?: () => void;
+}) {
   const router = useRouter();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [stage, setStage] = useState<UploadStage>("idle");
@@ -147,6 +153,7 @@ export function ProseUploader({ projectId }: { projectId: string }) {
       setWarnings(payload.warnings);
       setResult(payload);
       router.refresh();
+      onIngestSuccess?.();
     } catch (error) {
       console.error(error);
       timersRef.current.forEach((timer) => window.clearTimeout(timer));

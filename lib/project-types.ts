@@ -116,6 +116,7 @@ export interface MusicPromptSection {
 export interface ClaudeSynthesisOutput {
   cueBrief: CueBrief;
   prompts: MusicPromptSection[];
+  sfxDescriptions: string[];
 }
 
 export interface ScoreVariant {
@@ -125,9 +126,34 @@ export interface ScoreVariant {
   compositionPlan?: unknown;
 }
 
+export interface SfxVariant {
+  description: string;
+  blobUrl: string;
+  durationSeconds?: number;
+}
+
 export interface SynthesisResult {
   cueBrief: CueBrief;
   variants: ScoreVariant[];
+  sfxVariants: SfxVariant[];
+  warnings: string[];
+}
+
+export interface Scene {
+  id: string;
+  title: string;
+  description: string;
+  timecode?: string;
+}
+
+export interface SceneExtractionResult {
+  scenes: Scene[];
+  warnings: string[];
+}
+
+export interface TitleTrackResult {
+  blobUrl: string;
+  compositionPlan?: unknown;
   warnings: string[];
 }
 

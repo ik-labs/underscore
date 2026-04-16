@@ -8,8 +8,10 @@ import type {
   MusicPromptShape,
   RetrievedChunk,
   ScoreVariant,
+  SfxVariant,
   SynthesisResult,
 } from "@/lib/project-types";
+import { generateSfxClip } from "@/lib/sfx";
 
 // ─── Input type ───────────────────────────────────────────────────────────────
 
@@ -82,6 +84,10 @@ OUTPUT SCHEMA (return exactly this structure):
       "shape": "voice_weighted",
       "prompt": "string — foregrounds tonal/textural qualities that complement the director's voice; if no voice transcript, similar to cinematic but more intimate"
     }
+  ],
+  "sfxDescriptions": [
+    "string — concise physical/environmental sound description for ElevenLabs SFX, e.g. 'heavy rain hammering a stone bridge railing, close mic'",
+    "string — second distinct SFX description complementing the scene without overlapping the music"
   ]
 }`;
 
@@ -122,6 +128,11 @@ async function callClaude(
 
   if (!parsed.cueBrief || !Array.isArray(parsed.prompts) || parsed.prompts.length !== 3) {
     throw new Error("Claude returned malformed synthesis JSON");
+  }
+
+  // sfxDescriptions is optional — default to empty array if missing
+  if (!Array.isArray(parsed.sfxDescriptions)) {
+    parsed.sfxDescriptions = [];
   }
 
   return parsed;
@@ -230,39 +241,53 @@ export async function synthesizeAndGenerate(
     anthropicApiKey
   );
 
-  // Three parallel ElevenLabs generations
+  // Three music variants + SFX clips in parallel
   const promptEntries = claudeOutput.prompts;
-  const settled = await Promise.allSettled(
-    promptEntries.map((p) =>
-      generateAndUpload(
-        p.prompt,
-        p.shape,
-        projectId,
-        elevenLabsApiKey,
-        blobToken
+  const sfxDescriptions = claudeOutput.sfxDescriptions ?? [];
+
+  const [musicSettled, sfxSettled] = await Promise.all([
+    Promise.allSettled(
+      promptEntries.map((p) =>
+        generateAndUpload(p.prompt, p.shape, projectId, elevenLabsApiKey, blobToken)
       )
-    )
-  );
+    ),
+    Promise.allSettled(
+      sfxDescriptions.map((desc) =>
+        generateSfxClip(desc, projectId, elevenLabsApiKey, blobToken)
+      )
+    ),
+  ]);
 
   const variants: ScoreVariant[] = [];
+  const sfxVariants: SfxVariant[] = [];
   const warnings: string[] = [];
 
-  settled.forEach((result, i) => {
+  musicSettled.forEach((result, i) => {
     const shape = promptEntries[i]!.shape;
     if (result.status === "fulfilled") {
       variants.push(result.value);
     } else {
       const msg =
-        result.reason instanceof Error
-          ? result.reason.message
-          : "unknown error";
+        result.reason instanceof Error ? result.reason.message : "unknown error";
       warnings.push(`Score variant "${shape}" failed: ${msg}`);
+    }
+  });
+
+  sfxSettled.forEach((result, i) => {
+    const desc = sfxDescriptions[i] ?? `SFX ${i + 1}`;
+    if (result.status === "fulfilled") {
+      sfxVariants.push(result.value);
+    } else {
+      const msg =
+        result.reason instanceof Error ? result.reason.message : "unknown error";
+      warnings.push(`SFX clip "${desc.slice(0, 40)}" failed: ${msg}`);
     }
   });
 
   return {
     cueBrief: claudeOutput.cueBrief,
     variants,
+    sfxVariants,
     warnings,
   };
 }
