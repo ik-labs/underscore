@@ -18,12 +18,15 @@ export function ScoreTab({
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
   const [titleTrack, setTitleTrack] = useState<TitleTrackResult | null>(null);
 
-  // Load scenes when we have chunks or when triggered after ingest
+  // Load scenes on mount and whenever triggered after ingest.
+  // Don't guard on proseChunkCount here — it's stale at the moment onIngestSuccess fires.
+  // The /api/scenes route reads fresh project data from KV itself.
   useEffect(() => {
-    if (project.proseChunkCount === 0) return;
-
     let cancelled = false;
-    setScenesLoading(true);
+    // Only show skeleton if triggered after an ingest (tick > 0) or project already has chunks
+    if (triggerSceneLoad > 0 || project.proseChunkCount > 0) {
+      setScenesLoading(true);
+    }
 
     fetch("/api/scenes", {
       method: "POST",
