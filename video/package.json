@@ -1,0 +1,21 @@
+{
+  "name": "underscore-video",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts Underscore out/underscore-demo.mp4",
+    "build": "remotion render src/index.ts Underscore out/underscore-demo.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.290",
+    "remotion": "^4.0.290",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.5.0"
+  }
+}

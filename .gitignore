@@ -36,6 +36,23 @@ yarn-error.log*
 # vercel
 .vercel
 
+# agent/IDE config dirs
+.agents/
+.continue/
+.factory/
+.junie/
+.kiro/
+.trae/
+.windsurf/
+
+# video renders
+video/out/
+video/node_modules/
+
+# screenshots (not needed in repo)
+images/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env*.local

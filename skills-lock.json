@@ -6,6 +6,11 @@
       "sourceType": "github",
       "computedHash": "9d42e873a5f9ff3de54742e598f5f8321f12f7ae2b38de08bb40fb78b113bb01"
     },
+    "remotion-best-practices": {
+      "source": "remotion-dev/skills",
+      "sourceType": "github",
+      "computedHash": "df654933e451556147e384078c3fbdbac997cb0fe4d2f2db7642000c239304c5"
+    },
     "sound-effects": {
       "source": "elevenlabs/skills",
       "sourceType": "github",
