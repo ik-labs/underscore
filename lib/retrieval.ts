@@ -422,7 +422,13 @@ export async function retrieveForScene(
         result.reason instanceof Error
           ? result.reason.message
           : "unknown error";
-      warnings.push(`Query "${origin}" failed: ${msg}`);
+      // Suppress "namespace not found" — expected when no audio has been indexed
+      const isNamespaceNotFound =
+        msg.toLowerCase().includes("not found") ||
+        msg.toLowerCase().includes("namespace");
+      if (!isNamespaceNotFound) {
+        warnings.push(`Query "${origin}" failed: ${msg}`);
+      }
       rankedLists.push([]);
     }
   });

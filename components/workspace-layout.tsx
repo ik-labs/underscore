@@ -48,7 +48,7 @@ export function WorkspaceLayout({ project }: { project: ProjectRecord }) {
               <p className="text-xs uppercase tracking-[0.28em] text-stone-300/65">
                 Created
               </p>
-              <p className="mt-2 text-sm text-stone-100">
+              <p className="mt-2 text-sm text-stone-100" suppressHydrationWarning>
                 {formatDate(project.createdAt)}
               </p>
             </div>
